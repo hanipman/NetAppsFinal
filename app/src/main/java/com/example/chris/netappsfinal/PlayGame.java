@@ -24,25 +24,31 @@ public class PlayGame extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         setContentView(R.layout.activity_play_game);
+        String queueName = (getIntent().getStringExtra("user"));
         mTextview = (TextView) findViewById(R.id.textView);
         mTextview.setText(getIntent().getStringExtra("user"));
         setupConnectionFactory();
+        publish(queueName);
     }
 
     ConnectionFactory factory = new ConnectionFactory();
+    Channel ch;
     private void setupConnectionFactory() {
         factory.setAutomaticRecoveryEnabled(false);
-        factory.setHost("10.0.0.2");
+        factory.setHost("172.29.119.171");
         factory.setVirtualHost("test");
         factory.setUsername("pi");
         factory.setPassword("raspberry");
+    }
+
+    private void publish(String message) {
+        final String mess = message;
         publishThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                String mess = "player1";
                 try {
                     Connection connection = factory.newConnection();
-                    Channel ch = connection.createChannel();
+                    ch = connection.createChannel();
                     ch.exchangeDeclare("apptoserver", "direct");
                     ch.basicPublish("apptoserver", "server", null, mess.getBytes());
                     Log.d("", "[s] " + mess);
